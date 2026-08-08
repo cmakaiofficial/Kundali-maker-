@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AstroVedic Pro - Professional Kundali Generator</title>
+    <style>
+        :root {
+            --primary: #4A154B;
+            --secondary: #D4AF37;
+            --dark: #2C3E50;
+            --light: #F9F9FB;
+            --accent: #8E44AD;
+            --border: #E2E8F0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at center, #2C1654 0%, #11071F 100%);
+            color: white;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Ambient Stars Background */
+        .stars {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, #eee, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 40px 70px, var(--secondary), rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 90px 40px, #fff, rgba(0,0,0,0));
+            background-repeat: repeat;
+            background-size: 200px 200px;
+            opacity: 0.3;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Screen Controller */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            min-height: 100vh;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .screen.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        /* --- INTRO SCREEN STYLES --- */
+        .intro-container {
+            text-align: center;
+            max-width: 600px;
+            padding: 3rem 2rem;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 1.2s ease-out;
+            margin: auto;
+        }
+
+        .logo-icon {
+            font-size: 3.5rem;
+            color: var(--secondary);
+            margin-bottom: 1rem;
+            animation: pulse 3s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.08); opacity: 1; filter: drop-shadow(0 0 10px var(--secondary)); }
+        }
+
+        .intro-container h1 {
+            font-size: 2.8rem;
+            letter-spacing: 2px;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #FFF, var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .intro-container p {
+            color: #CBD5E1;
+            font-size: 1.1rem;
+            margin-bottom: 2.5rem;
+            line-height: 1.5;
+        }
+
+        .enter-btn {
+            background: linear-gradient(135deg, var(--secondary), #AA7C11);
+            color: #1A1A2E;
+            border: none;
+            padding: 0.9rem 2.8rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+        }
+
+        .enter-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.6);
+            background: linear-gradient(135deg, #F3C643, #D4AF37);
+        }
+
+        .footer-note {
+            margin-top: 2rem;
+            font-size: 0.85rem;
+            color: #64748B;
+            letter-spacing: 0.5px;
+        }
+
+        /* --- KUNDALI APP SCREEN STYLES --- */
+        #kundaliScreen {
+            flex-direction: column;
+            align-items: stretch;
+            background-color: var(--light);
+            color: var(--dark);
+            overflow-y: auto;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), #2C1654);
+            color: white;
+            padding: 2rem 1rem;
+            text-align: center;
+            border-bottom: 4px solid var(--secondary);
+            width: 100%;
+        }
+
+        header h2 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: 1px;
+        }
+
+        header p {
+            color: #E2E8F0;
+            font-size: 1.1rem;
+        }
+
+        .app-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .app-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            padding: 2rem;
+            border-top: 4px solid var(--accent);
+        }
+
+        .card h3 {
+            margin-bottom: 1.5rem;
+            font-size: 1.4rem;
+            color: var(--primary);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.4rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--dark);
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border 0.3s;
+            background: #fff;
+            color: var(--dark);
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(142, 68, 173, 0.1);
+        }
+
+        .btn-generate {
+            background: linear-gradient(135deg, var(--secondary), #B7950B);
+            color: #fff;
+            border: none;
+            padding: 0.85rem 1.5rem;
+            width: 100%;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: opacity 0.3s;
+            margin-top: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-generate:hover {
+            opacity: 0.9;
+        }
+
+        .output-section {
+            display: none;
+        }
+
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .birth-details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            background: #F8FAFC;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        .birth-details-grid div span {
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .chart-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            border: 1px solid var(--border);
+            padding: 0.75rem;
+            text-align: left;
+            color: var(--dark);
+        }
+
+        th {
+            background-color: #F1F5F9;
+            color: var(--primary);
+        }
+
+        .print-btn {
+            background: var(--dark);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .print-btn:hover {
+            background: var(--primary);
+        }
+
+        .placeholder-text {
+            text-align: center;
+            color: #94A3B8;
+            padding: 4rem 1rem;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="stars"></div>
+
+    <!-- Screen 1: Intro Screen -->
+    <div id="introScreen" class="screen active">
+        <div class="intro-container">
+            <div class="logo-icon">🕉️</div>
+            <h1>AstroVedic Pro</h1>
+            <p>Unlock the secrets of the cosmos. Generate authentic Vedic charts, precise planetary positions, and deep astrological insights tailored to your destiny.</p>
+            <button class="enter-btn" id="enterBtn">Enter Generator</button>
+            <div class="footer-note">Powered by Ancient Vedic Wisdom & Modern Technology</div>
+        </div>
+    </div>
+
+    <!-- Screen 2: Kundali Maker App Screen -->
+    <div id="kundaliScreen" class="screen">
+        <header>
+            <h2>AstroVedic Pro</h2>
+            <p>Advanced Vedic Astrology & Janam Kundali Generator</p>
+        </header>
+
+        <div class="app-container">
+            <!-- Input Form Card -->
+            <div class="card">
+                <h3>Birth Particulars</h3>
+                <form id="kundaliForm">
+                    <div class="form-group">
+                        <label for="fullName">Full Name</label>
+                        <input type="text" id="fullName" required placeholder="e.g., Rajesh Sharma">
+                    </div>
+                    <div class="form-group">
+                        <label for="gender">Gender</label>
+                        <select id="gender">
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="dob">Date of Birth</label>
+                        <input type="date" id="dob" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="tob">Time of Birth</label>
+                        <input type="time" id="tob" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="pob">Place of Birth (City)</label>
+                        <input type="text" id="pob" required placeholder="e.g., New Delhi, India">
+                    </div>
+                    <button type="submit" class="btn-generate">Generate Kundali</button>
+                </form>
+            </div>
+
+            <!-- Result Display Card -->
+            <div class="card">
+                <div id="placeholderView" class="placeholder-text">
+                    Enter birth details on the left and click "Generate Kundali" to view comprehensive astrological charts and planetary positions.
+                </div>
+
+                <div id="outputView" class="output-section">
+                    <div class="output-header">
+                        <h3 id="resultTitle" style="margin-bottom:0; border:none; padding:0;">Janam Kundali</h3>
+                        <button class="print-btn" onclick="window.print()">Print / Save PDF</button>
+                    </div>
+
+                    <div class="birth-details-grid">
+                        <div>Name: <span id="resName">-</span></div>
+                        <div>Birth Time: <span id="resTime">-</span></div>
+                        <div>Birth Date: <span id="resDate">-</span></div>
+                        <div>Birth Place: <span id="resPlace">-</span></div>
+                        <div>Lagnam (Ascendant): <span id="resLagna">Mesha (Aries)</span></div>
+                        <div>Nakshatra: <span id="resNakshatra">Rohini (Pad 2)</span></div>
+                    </div>
+
+                    <h3 style="font-size:1.1rem; margin-top:1rem;">Lagnam Chart (Rashi Kundali)</h3>
+                    <div class="chart-container">
+                        <svg width="280" height="280" viewBox="0 0 300 300" style="border: 2px solid #2C3E50; background: #fff;">
+                            <polygon points="0,0 300,0 300,300 0,300" fill="none" stroke="#2C3E50" stroke-width="2"/>
+                            <line x1="0" y1="0" x2="300" y2="300" stroke="#2C3E50" stroke-width="1.5"/>
+                            <line x1="300" y1="0" x2="0" y2="300" stroke="#2C3E50" stroke-width="1.5"/>
+                            <line x1="150" y1="0" x2="0" y2="150" stroke="#2C3E50" stroke-width="1.5"/>
+                            <line x1="0" y1="150" x2="150" y2="300" stroke="#2C3E50" stroke-width="1.5"/>
+                            <line x1="150" y1="300" x2="300" y2="150" stroke="#2C3E50" stroke-width="1.5"/>
+                            <line x1="300" y1="150" x2="150" y2="0" stroke="#2C3E50" stroke-width="1.5"/>
+                            
+                            <text x="150" y="80" font-size="11" font-weight="bold" fill="#4A154B" text-anchor="middle">1 (As)</text>
+                            <text x="150" y="95" font-size="10" fill="#2C3E50" text-anchor="middle">Sun, Mar</text>
+                            
+                            <text x="75" y="30" font-size="11" font-weight="bold" fill="#4A154B" text-anchor="middle">2</text>
+                            <text x="75" y="45" font-size="10" fill="#2C3E50" text-anchor="middle">Merc</text>
+
+                            <text x="30" y="75" font-size="11" font-weight="bold" fill="#4A154B" text-anchor="middle">3</text>
+                            
+                            <text x="80" y="150" font-size="11" font-weight="bold" fill="#4A154B" text-anchor="middle">4</text>
+                            <text x="80" y="165" font-size="10" fill="#2C3E50" text-anchor="middle">Jup</text>
+
+                            <text x="30" y="225" font-size="11" font-weight="bold" fill="#4A154B" text-anchor="middle">5</text>
+                            
+                            <text x="75" y="270" font-size="11" font-weight="bold" fill="#4A154B" text-anchor="middle">6</text>
+                            <text x="75" y="285" font-size="10" fill="#2C3E50" text-anchor="middle">Sat</text>
+
+                            <text x="150" y="225" font-size="11" font-weight="bold" fill="#4A154B" text-anchor="middle">7</text>
+                            <text x="150" y="240" font-size="10" fill="#2C3E50" text-anchor="middle">Rahu</text>
+
+                            <text x="225" y="270" font-size="11" font-weight="bold" fill="#4A154B" text-anchor="middle">8</text>
+                            
+                            <text x="270" y="225" font-size="11" font-weight="bold" fill="#4A154B" text-anchor="middle">9</text>
+
+                            <text x="220" y="150" font-size="11" font-weight="bold" fill="#4A154B" text-anchor="middle">10</text>
+                            <text x="220" y="165" font-size="10" fill="#2C3E50" text-anchor="middle">Ven</text>
+
+                            <text x="270" y="75" font-size="11" font-weight="bold" fill="#4A154B" text-anchor="middle">11</text>
+                            <text x="270" y="90" font-size="10" fill="#2C3E50" text-anchor="middle">Ketu</text>
+
+                            <text x="225" y="30" font-size="11" font-weight="bold" fill="#4A154B" text-anchor="middle">12</text>
+                            <text x="225" y="45" font-size="10" fill="#2C3E50" text-anchor="middle">Moon</text>
+                        </svg>
+                    </div>
+
+                    <h3 style="font-size:1.1rem; margin-top:1rem;">Planetary Positions (Graha Sthithi)</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Planet</th>
+                                <th>Sign (Rashi)</th>
+                                <th>House</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Ascendant</td><td>Aries (Mesha)</td><td>1st</td><td>-</td></tr>
+                            <tr><td>Sun (Surya)</td><td>Aries (Mesha)</td><td>1st</td><td>Exalted</td></tr>
+                            <tr><td>Moon (Chandra)</td><td>Pisces (Meena)</td><td>12th</td><td>Friendly</td></tr>
+                            <tr><td>Mars (Mangal)</td><td>Aries (Mesha)</td><td>1st</td><td>Own Sign</td></tr>
+                            <tr><td>Mercury (Budh)</td><td>Taurus (Vrishabha)</td><td>2nd</td><td>Neutral</td></tr>
+                            <tr><td>Jupiter (Guru)</td><td>Cancer (Karka)</td><td>4th</td><td>Exalted</td></tr>
+                            <tr><td>Venus (Shukra)</td><td>Capricorn (Makara)</td><td>10th</td><td>Enemy</td></tr>
+                            <tr><td>Saturn (Shani)</td><td>Virgo (Kanya)</td><td>6th</td><td>Friendly</td></tr>
+                            <tr><td>Rahu</td><td>Libra (Tula)</td><td>7th</td><td>-</td></tr>
+                            <tr><td>Ketu</td><td>Aries (Mesha)</td><td>1st</td><td>-</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Screen Switching Logic
+        const enterBtn = document.getElementById('enterBtn');
+        const introScreen = document.getElementById('introScreen');
+        const kundaliScreen = document.getElementById('kundaliScreen');
+
+        enterBtn.addEventListener('click', () => {
+            introScreen.style.opacity = '0';
+            setTimeout(() => {
+                introScreen.classList.remove('active');
+                kundaliScreen.classList.add('active');
+            }, 500);
+        });
+
+        // Kundali Generator Form Logic
+        document.getElementById('kundaliForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('fullName').value;
+            const dob = document.getElementById('dob').value;
+            const tob = document.getElementById('tob').value;
+            const pob = document.getElementById('pob').value;
+
+            document.getElementById('resName').innerText = name;
+            document.getElementById('resDate').innerText = dob;
+            document.getElementById('resTime').innerText = tob;
+            document.getElementById('resPlace').innerText = pob;
+
+            document.getElementById('placeholderView').style.display = 'none';
+            document.getElementById('outputView').style.display = 'block';
+        });
+    </script>
+</body>
+</html>
